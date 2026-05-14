@@ -43,8 +43,9 @@ head(allDiff, 12)
 
 write.csv(allDiff,file = "allDiff_lihc.csv")
 DEG_limma_voom <- allDiff
-k1 <- (DEG_limma_voom$P.Value < P.Value) & (DEG_limma_voom$logFC < -logFC)
-k2 <- (DEG_limma_voom$P.Value < P.Value) & (DEG_limma_voom$logFC > logFC)
+logFC = 0.5
+k1 <- (DEG_limma_voom$adj.P.Val < 0.05) & (DEG_limma_voom$logFC < -logFC)
+k2 <- (DEG_limma_voom$adj.P.Val < 0.05) & (DEG_limma_voom$logFC > logFC)
 DEG_limma_voom <- mutate(DEG_limma_voom, change = ifelse(k1, "down", ifelse(k2, "up", "stable")))
 
 
