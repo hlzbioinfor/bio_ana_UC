@@ -248,3 +248,50 @@ ggplot(draw_data, aes(real,variable, fill = value)) +
 
 final_model <- randomForest(x = X_train, y = y_train,mtry = 4,ntree = 100)
 write.csv(mach_gene$rf_genes %>% as.data.frame(),file = "revise/补充材料/step4machine_learning/rf_genes.csv",)
+###ROC
+library(tidyverse)
+library(dplyr)
+library(pROC)
+colnames(t_roc_data)[ncol(t_roc_data)] = "Group"
+colnames(t_roc_data)
+genes = colnames(t_roc_data)[1:8]
+genes
+roc_formula <- paste("Group ~", paste(genes, collapse = "+")) %>% as.formula
+roc_formula
+data = t_roc_data
+roc <- roc(roc_formula, data = data,
+           percent = F, 
+           ci= TRUE, 
+           smoooth = F, 
+           levels=c("Normal", "Disease")
+)
+
+roc
+### 绘制多条ROC曲线
+auc_labels <- sapply(names(roc), function(gene) {
+  sprintf("%s AUC=%.3f", gene, roc[[gene]]$auc)
+})
+# 拼接
+subtitle_text <- paste(auc_labels, collapse = "\n")
+
+ggroc(roc, legacy.axes = TRUE )+
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype=1, linewidth = 0.4)+
+  ggtitle('')+
+  ggsci::scale_color_lancet()+
+  theme_test()+
+  ggprism::theme_prism(border = T)+
+  annotate("text",x=0.75,y=0.05,label= subtitle_text )
+ggroc(roc, legacy.axes = TRUE )+
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype=1, linewidth = 0.4)+
+  ggtitle('')+
+  ggsci::scale_color_lancet()+
+  theme_test()+
+  ggprism::theme_prism(border = T)+
+  annotate("text",x=0.75,y=0.22,label= subtitle_text )
+ls()
+roc_data <- list(
+  data= data,
+  roc= roc,
+  t_roc_data= t_roc_data
+)
+save(roc_data,file = "roc_new_vali.rda")
